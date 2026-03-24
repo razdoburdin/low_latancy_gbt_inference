@@ -18,6 +18,8 @@ import numpy as np
 import time
 import argparse
 import daal4py
+import tl2cgen
+import onnxruntime as ort
 import os
 import glob
 import shutil
@@ -70,6 +72,14 @@ if __name__ == '__main__':
         else:
             prediction = np.zeros(n_samples)
 
+        if args.framework == "treelite":
+            X = np.asarray(X, np.float32)
+            predictor, objective = models.get_treelite_model(name)
+        if args.framework == "onnx":
+            X = np.asarray(X, np.float32)
+            session, objective = models.get_onnx_model(name)
+            input_name = session.get_inputs()[0].name
+
         # Signal this instance is ready
         open(f"{barrier_dir}/{name}_{args.framework}_{instance_index}.ready", "w").close()
         # Wait for all instances
@@ -101,6 +111,31 @@ if __name__ == '__main__':
                 end = time.perf_counter_ns()
                 prediction[idx:idx+1] = out
                 result[name]["time"][idx] = end - begin
+
+        elif args.framework == "treelite":
+            # warm-up
+            for sample in range(64):
+                _ = predictor.predict(tl2cgen.DMatrix(X[sample:sample+1, :]))
+            for idx in range(n_samples):
+                sample = block_size * instance_index + idx
+                begin = time.perf_counter_ns()
+                out = predictor.predict(tl2cgen.DMatrix(X[sample:sample+1, :]))
+                end = time.perf_counter_ns()
+                prediction[idx:idx+1] = out
+                result[name]["time"][idx] = end - begin
+
+        elif args.framework == "onnx":
+            # warm-up
+            for sample in range(64):
+                _ = session.run(None, {input_name: X[sample:sample+1, :]})
+            for idx in range(n_samples):
+                sample = block_size * instance_index + idx
+                begin = time.perf_counter_ns()
+                out = session.run(None, {input_name: X[sample:sample+1, :]})
+                end = time.perf_counter_ns()
+                prediction[idx:idx+1] = out[0]
+                result[name]["time"][idx] = end - begin
+
         else:
             raise ValueError("Unknown framework")
 

@@ -14,13 +14,19 @@
 # limitations under the License.
 # ===============================================================================
 
-from .utils import get_model, get_treelite_model, get_onnx_model, model_path
-from .configs import configs
+import os
+import treelite
+import tl2cgen
 
-__all__ = [
-    "get_model",
-    "get_treelite_model",
-    "get_onnx_model",
-    "model_path",
-    "configs"
-]
+import datasets
+import models
+
+if __name__ == '__main__':
+    for name in datasets.dataset_loaders:
+        print(f"Converting: {name}")
+
+        booster, objective = models.get_model(name)
+        treelite_model = treelite.frontend.from_xgboost(booster)
+        libpath = models.model_path("treelite", name, ext=".so")
+        tl2cgen.export_lib(treelite_model, toolchain="gcc", libpath=libpath,
+                           params={"parallel_comp": os.cpu_count()})

@@ -34,7 +34,7 @@ if __name__ == '__main__':
                 result[name] = []
             result[name] += instance_result["time"]
 
-        results.clear_instance(args.framework, instance_index)
+        # results.clear_instance(args.framework, instance_index)
 
     summary = {}    
     for name, times in result.items():
