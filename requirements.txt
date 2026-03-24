@@ -1,0 +1,7 @@
+numpy
+xgboost
+scikit-learn-intelex
+pandas
+scikit-learn
+requests
+tqdm
