@@ -72,6 +72,9 @@ if __name__ == '__main__':
         else:
             prediction = np.zeros(n_samples)
 
+        if args.framework == "daal4py":
+            X = np.asarray(X, np.float32)
+            model_daal = daal4py.mb.convert_model(booster)
         if args.framework == "treelite":
             X = np.asarray(X, np.float32)
             predictor, objective = models.get_treelite_model(name)
@@ -89,25 +92,23 @@ if __name__ == '__main__':
         if args.framework == "xgboost":
             # warm-up
             for sample in range(64):
-                _ = booster.inplace_predict(X[sample:sample+1, :])
+                _ = booster.inplace_predict(X[[sample]])
             for idx in range(n_samples):
                 sample = block_size * instance_index + idx
                 begin = time.perf_counter_ns()
-                out = process_xgb_prediction(objective, booster.inplace_predict(X[sample:sample+1, :]))
+                out = process_xgb_prediction(objective, booster.inplace_predict(X[[sample]]))
                 end = time.perf_counter_ns()
                 prediction[idx:idx+1] = out
                 result[name]["time"][idx] = end - begin
 
         elif args.framework == "daal4py":
-            X = np.asarray(X, np.float32)
-            model_daal = daal4py.mb.convert_model(booster)
             # warm-up
             for sample in range(64):
-                _ = model_daal.predict(X[sample:sample+1, :])
+                _ = model_daal.predict(X[[sample]])
             for idx in range(n_samples):
                 sample = block_size * instance_index + idx
                 begin = time.perf_counter_ns()
-                out = model_daal.predict(X[sample:sample+1, :])
+                out = model_daal.predict(X[[sample]])
                 end = time.perf_counter_ns()
                 prediction[idx:idx+1] = out
                 result[name]["time"][idx] = end - begin
@@ -115,11 +116,11 @@ if __name__ == '__main__':
         elif args.framework == "treelite":
             # warm-up
             for sample in range(64):
-                _ = predictor.predict(tl2cgen.DMatrix(X[sample:sample+1, :]))
+                _ = predictor.predict(tl2cgen.DMatrix(X[[sample]]))
             for idx in range(n_samples):
                 sample = block_size * instance_index + idx
                 begin = time.perf_counter_ns()
-                out = predictor.predict(tl2cgen.DMatrix(X[sample:sample+1, :]))
+                out = predictor.predict(tl2cgen.DMatrix(X[[sample]]))
                 end = time.perf_counter_ns()
                 prediction[idx:idx+1] = out
                 result[name]["time"][idx] = end - begin
@@ -127,11 +128,11 @@ if __name__ == '__main__':
         elif args.framework == "onnx":
             # warm-up
             for sample in range(64):
-                _ = session.run(None, {input_name: X[sample:sample+1, :]})
+                _ = session.run(None, {input_name: X[[sample]]})
             for idx in range(n_samples):
                 sample = block_size * instance_index + idx
                 begin = time.perf_counter_ns()
-                out = session.run(None, {input_name: X[sample:sample+1, :]})
+                out = session.run(None, {input_name: X[[sample]]})
                 end = time.perf_counter_ns()
                 prediction[idx:idx+1] = out[0]
                 result[name]["time"][idx] = end - begin
