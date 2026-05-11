@@ -16,7 +16,7 @@ git clone https://github.com/razdoburdin/low_latancy_gbt_inference.git
 ## Create env
 ```
 cd low_latancy_gbt_inference
-conda create --name gbt --file requirements.txt
+conda create --name gbt --file requirements.txt -y
 conda activate gbt
 ```
 
