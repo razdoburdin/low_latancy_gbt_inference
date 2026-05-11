@@ -1,10 +1,10 @@
 Steps to reproduce results:
 
 ## Install miniforge
-wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
-chmod +x Miniforge3-Linux-x86_64.sh
-./Miniforge3-Linux-x86_64.sh -b
-eval "$(miniforge3/bin/conda shell.bash hook)"
+`wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh`
+`chmod +x Miniforge3-Linux-x86_64.sh`
+`./Miniforge3-Linux-x86_64.sh -b`
+`eval "$(miniforge3/bin/conda shell.bash hook)"`
 
 ## Clone repo
 git clone https://github.com/razdoburdin/low_latancy_gbt_inference.git
