@@ -6,6 +6,7 @@ scikit-learn
 requests
 tqdm
 treelite
+gxx
 tl2cgen
 onnxmltools
 onnxruntime

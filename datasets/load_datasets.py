@@ -46,7 +46,14 @@ def get_data(name: str, stage: str):
     if (not is_loaded(data_folder, name, stage)):
         loader(data_folder)
 
-    X = np.load(f"{data_folder}/{name}_x_{stage}.npy", allow_pickle=True)
-    y = np.load(f"{data_folder}/{name}_y_{stage}.npy", allow_pickle=True)
+    try:
+        X = np.load(f"{data_folder}/{name}_x_{stage}.npy", mmap_mode='r')
+    except ValueError:
+        X = np.load(f"{data_folder}/{name}_x_{stage}.npy", allow_pickle=True)
+
+    try:
+        y = np.load(f"{data_folder}/{name}_y_{stage}.npy", mmap_mode='r')
+    except ValueError:
+        y = np.load(f"{data_folder}/{name}_y_{stage}.npy", allow_pickle=True)
 
     return [X, y]

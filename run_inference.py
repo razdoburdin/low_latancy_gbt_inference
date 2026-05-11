@@ -142,6 +142,8 @@ if __name__ == '__main__':
 
         result[name]["time"] = result[name]["time"].tolist()
 
+        del X, y, prediction, booster
+
     results.save_instance(result, args.framework, instance_index)
 
     if instance_index == 0:
